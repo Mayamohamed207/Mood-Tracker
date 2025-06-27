@@ -8,8 +8,9 @@ interface Props {
 }
 
 export default function UserSettingsModal({ user, setUser, onClose }: Props) {
+  const defaultAvatar = "https://mayamohamed207.github.io/Mood-Tracker/images/userDefault.png";
   const [name, setName] = useState(user.name);
-  const [avatar, setAvatar] = useState(user.avatar);
+  const [avatar, setAvatar] = useState(user.avatar || defaultAvatar);
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,6 +36,7 @@ export default function UserSettingsModal({ user, setUser, onClose }: Props) {
           &times;
         </button>
         <h2>Edit Profile</h2>
+
         <div className="mb-3">
           <label className="form-label">Name</label>
           <input
@@ -43,20 +45,25 @@ export default function UserSettingsModal({ user, setUser, onClose }: Props) {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
+
         <div className="mb-3">
           <label className="form-label">Avatar</label>
           <input type="file" accept="image/*" onChange={handleAvatarChange} />
         </div>
-        {avatar && (
+
+        <div className="avatar-save-group">
           <img
             src={avatar}
             alt="Avatar Preview"
-            style={{ width: 80, height: 80, borderRadius: "50%" }}
+            onError={(e) => {
+              e.currentTarget.src = defaultAvatar;
+            }}
+            className="avatar-preview"
           />
-        )}
-        <button className="btn btn-primary mt-3" onClick={handleSave}>
-          Save
-        </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            Save
+          </button>
+        </div>
       </div>
     </>
   );
