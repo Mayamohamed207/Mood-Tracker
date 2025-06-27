@@ -1,0 +1,53 @@
+{
+  "quotes": {
+    "happy": "Happiness is a direction, not a place.",
+    "excited": "Excitement is the spark that lights your fire.",
+    "neutral": "Neutrality is the essence of wisdom.",
+    "anxious": "Anxiety is just the mind's way of paying attention.",
+    "sad": "Sadness flies away on the wings of time."
+  },
+  "entries": [
+    {
+      "mood": "happy",
+      "feelings": "grateful, energized",
+      "reflection": "Tried meditation and felt calm",
+      "sleep": 8,
+      "date": "2025-06-17"
+    },
+    {
+      "mood": "neutral",
+      "feelings": "focused, steady",
+      "reflection": "Completed tasks but felt routine",
+      "sleep": 7,
+      "date": "2025-06-16"
+    },
+    {
+      "mood": "sad",
+      "feelings": "tired, quiet",
+      "reflection": "Had a hard day emotionally",
+      "sleep": 6,
+      "date": "2025-06-15"
+    },
+    {
+      "mood": "happy",
+      "feelings": "productive, cheerful",
+      "reflection": "Finished a project early!",
+      "sleep": 8,
+      "date": "2025-06-14"
+    },
+    {
+      "mood": "neutral",
+      "feelings": "calm, relaxed",
+      "reflection": "Just another day",
+      "sleep": 7,
+      "date": "2025-06-13"
+    },
+    {
+      "mood": "happy",
+      "feelings": "joyful, satisfied",
+      "reflection": "Had a fun call with friends",
+      "sleep": 9,
+      "date": "2025-06-12"
+    }
+  ]
+}
