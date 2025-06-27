@@ -5,7 +5,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
 
@@ -24,19 +23,25 @@ const moodDetails: Record<Mood, { color: string; emoji: string; score: number }>
 };
 
 export default function Stats({ entries }: Props) {
-  if (!entries.length) {
-    return (
-      <div className="card-custom empty-state">
-        <p>No moods entered yet. Please log your mood to see the chart.</p>
-      </div>
-    );
+  const recent = [...entries].slice(0, 11).reverse();
+
+  // Fill up to 11 bars (fixed width) with placeholders
+  const filledData: Entry[] = [...recent];
+  while (filledData.length < 11) {
+    filledData.push({
+      date: new Date().toISOString(),
+      mood: "neutral",
+      sleep: 0,
+      feelings: "",
+      reflection: "",
+      hasEntry: false
+    });
   }
 
-  const recent = entries.slice(0, 11).reverse();
-
-  const chartData = recent.map((entry) => ({
+  const chartData = filledData.map((entry) => ({
     ...entry,
     moodScore: moodDetails[entry.mood as Mood]?.score ?? 3,
+    hasEntry: entry.sleep > 0,
   }));
 
   const CustomTooltip = ({
@@ -50,17 +55,11 @@ export default function Stats({ entries }: Props) {
   }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+      if (!data.hasEntry) return null;
+
       const moodInfo = moodDetails[data.mood as Mood];
       return (
-        <div
-          style={{
-            backgroundColor: "white",
-            border: "1px solid #ccc",
-            padding: "10px",
-            fontSize: "14px",
-            borderRadius: 4,
-          }}
-        >
+        <div className="custom-tooltip">
           <div><strong>{label}</strong></div>
           <div>Mood: {moodInfo?.emoji} {data.mood}</div>
           <div>Sleep: {data.sleep} hrs</div>
@@ -72,76 +71,100 @@ export default function Stats({ entries }: Props) {
   };
 
   return (
-    <div className="card-custom">
-      <h5 className="mb-3">Mood & Sleep Trend</h5>
-      <ResponsiveContainer width="100%" height={320}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-          barCategoryGap="10%"
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="date"
-            angle={-45}
-            textAnchor="end"
-            height={40}
-            tickFormatter={(date) => {
-              const d = new Date(date);
-              return `${d.getMonth() + 1}/${d.getDate()}`;
-            }}
-          />
-          <YAxis
-            domain={[0, 12]}
-            tickCount={7}
-            label={{ value: "", angle: 90, position: "insideRight" }}
-          />
-          <Tooltip content={<CustomTooltip />} />
+    <div className="right-col">
+      <div className="card-custom">
+        <h5 className="mb-3">Mood & Sleep Trend</h5>
+        <div className="chart-wrapper" style={{ overflowX: "auto" }}>
+          <BarChart
+            width={11 * 58}
+            height={320}
+            data={chartData}
+            margin={{ top: 0, right: 0, left: 0, bottom: 30 }}
+            barCategoryGap={10}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="date"
+              interval={0}
+              height={50}
+              tick={({ x, y, payload, index }: any) => {
+                const data = chartData[index];
+                if (!data.hasEntry) {
+                  // Return an empty SVG group instead of null to satisfy recharts' type requirements
+                  return <g />;
+                }
 
-        <Bar
-        dataKey="sleep"
-        radius={[20, 20, 0, 0]}
-        label={({ x, y, width, index }) => {
-            const mood = chartData[index].mood as Mood;
-            const emoji = moodDetails[mood]?.emoji ?? "😐";
+                const date = new Date(payload.value);
+                const month = date.toLocaleString("default", { month: "short" });
+                const day = date.getDate();
 
-            return (
-            <text
-                x={x + width / 2}
-                y={y + 24}
-                textAnchor="middle"
-                fontSize={32}
-                dominantBaseline="middle"
-                style={{ pointerEvents: "none" }}
-            >
-                {emoji}
-            </text>
-            );
-        }}
-        shape={({ x, y, width, height, payload }: any) => {
-            const color = moodDetails[payload.mood as Mood]?.color ?? "#ccc";
-
-            // Ensure a minimum height of 40px
-            const minHeight = 40;
-            const finalHeight = Math.max(height, minHeight);
-            const adjustedY = y - (finalHeight - height); // move y upward if height increased
-
-            return (
-            <rect
-                x={x}
-                y={adjustedY}
-                width={width}
-                height={finalHeight}
-                rx={25}
-                ry={25}
-                fill={color}
+                return (
+                  <g transform={`translate(${x},${y})`}>
+                    <text x={0} y={0} dy={16} textAnchor="middle" fill="#555">
+                      {month}
+                    </text>
+                    <text x={0} y={0} dy={32} textAnchor="middle" fill="#555">
+                      {day}
+                    </text>
+                  </g>
+                );
+              }}
             />
-            );
-        }}
-        />
+            <YAxis
+  domain={[0, 12]}
+  ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+/>
 
-        </BarChart>
-      </ResponsiveContainer>
+            <Tooltip content={<CustomTooltip />} />
+
+            <Bar
+              dataKey="sleep"
+              barSize={40}
+              radius={[20, 20, 0, 0]}
+              label={(props: any) => {
+                const { x, y, width, index } = props;
+                const data = chartData[index];
+                if (!data.hasEntry) {
+                  // Return an empty SVG element instead of null to satisfy type requirements
+                  return <g />;
+                }
+
+                const emoji = moodDetails[data.mood as Mood]?.emoji ?? "😐";
+                return (
+                  <text
+                    x={x + width / 2}
+                    y={y + 24}
+                    textAnchor="middle"
+                    fontSize={32}
+                    dominantBaseline="middle"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    {emoji}
+                  </text>
+                );
+              }}
+              shape={({ x, y, width, height, payload }: any) => {
+                const color = moodDetails[payload.mood as Mood]?.color ?? "#ccc";
+                const minHeight = payload.sleep > 0 ? 40 : 1;
+                const finalHeight = Math.max(height, minHeight);
+                const adjustedY = y - (finalHeight - height);
+                return (
+                  <rect
+                    x={x}
+                    y={adjustedY}
+                    width={width}
+                    height={finalHeight}
+                    rx={25}
+                    ry={25}
+                    fill={color}
+                    opacity={payload.sleep > 0 ? 1 : 0.1}
+                  />
+                );
+              }}
+            />
+          </BarChart>
+        </div>
+      </div>
     </div>
   );
 }

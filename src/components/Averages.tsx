@@ -37,7 +37,7 @@ function compareTrend(
   count: number,
   threshold = 0.1
 ): string {
-  if (count === 0) return ""; // no previous data to compare
+  if (count === 0) return "";
 
   const diff = current - previousAvg;
   const suffix = ` previous ${count} check-in${count > 1 ? "s" : ""}`;
@@ -56,56 +56,48 @@ export default function Averages({ entries }: Props) {
     );
   }
 
-  // Take up to 5 previous entries before current one
   const previousEntries = entries.slice(1, 6);
   const prevCount = previousEntries.length;
-
-  // Current (most recent) entry
   const currentEntry = entries[0];
 
-  // Average mood score of previous entries
   const prevMoodAvg =
     previousEntries.reduce((acc, e) => acc + moodToScore(e.mood), 0) / (prevCount || 1);
-  // Current mood score
   const currentMoodScore = moodToScore(currentEntry.mood);
-  // Mood trend string with count
   const moodTrend = compareTrend(currentMoodScore, prevMoodAvg, prevCount);
 
-  // Average sleep of previous entries
   const prevSleepAvg = previousEntries.reduce((acc, e) => acc + e.sleep, 0) / (prevCount || 1);
-  // Current sleep
   const currentSleep = currentEntry.sleep;
-  // Sleep trend string with count
   const sleepTrend = compareTrend(currentSleep, prevSleepAvg, prevCount);
 
-  // Average over last 5 (including current)
   const last5 = entries.slice(0, 5);
   const avgMoodScore =
     last5.reduce((acc, e) => acc + moodToScore(e.mood), 0) / (last5.length || 1);
   const avgMood = scoreToMood(avgMoodScore);
-
-  const avgSleep =
-    last5.reduce((acc, e) => acc + e.sleep, 0) / (last5.length || 1);
+  const avgSleep = last5.reduce((acc, e) => acc + e.sleep, 0) / (last5.length || 1);
 
   return (
-  <div className="left-col">
-    <h4 style={{ color: "white" }}>Average Mood</h4>
+    <div className="left-col">
+      <div className="card-custom averages-wrapper">
+        <div className="average-card-inner">
+          <div className="average-block">
+            <h4 className="average-title">Average Mood</h4>
+            <div className={`card-custom average-card mood-${avgMood}`}>
+              <h3>
+                {moodDetails[avgMood]?.emoji} {avgMood}
+              </h3>
+              {moodTrend && <small className="trend-text mood-trend">{moodTrend}</small>}
+            </div>
+          </div>
 
-    <div
-      className={`card-custom average-card mood-${avgMood}`}
-    >
-      <h3>
-        {moodDetails[avgMood]?.emoji} {avgMood}
-      </h3>
-      {moodTrend && <small className="trend-text mood-trend">{moodTrend}</small>}
+          <div className="average-block">
+            <h4 className="average-title">Average Sleep</h4>
+            <div className="card-custom sleep-card">
+              <p>{avgSleep.toFixed(1)} hrs</p>
+              {sleepTrend && <small className="trend-text sleep-trend">{sleepTrend}</small>}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <h4 style={{ color: "white" }}>Average Sleep</h4>
-
-    <div className="card-custom sleep-card sleep-style">
-      <p>{avgSleep.toFixed(1)} hrs</p>
-      {sleepTrend && <small className="trend-text sleep-trend">{sleepTrend}</small>}
-    </div>
-  </div>
-);
+  );
 }

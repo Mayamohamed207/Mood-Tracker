@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import type { Entry } from "../types";
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
 
 export default function MoodForm({ onSubmit }: Props) {
   const [form, setForm] = useState<Omit<Entry, "date">>({
+    hasEntry: false,
     mood: "neutral",
     feelings: "",
     reflection: "",
@@ -17,15 +18,14 @@ export default function MoodForm({ onSubmit }: Props) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const newEntry: Entry = {
       ...form,
       sleep: Number(form.sleep),
       date: new Date().toISOString().split("T")[0],
     };
     onSubmit(newEntry);
-    setForm({ mood: "neutral", feelings: "", reflection: "", sleep: 8 });
+    setForm({ hasEntry: false, mood: "neutral", feelings: "", reflection: "", sleep: 8 });
   };
 
   return (
